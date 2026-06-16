@@ -1,0 +1,200 @@
+<div class="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
+  <!-- Header -->
+  <div class="bg-gradient-to-r from-blue-500 to-indigo-600 px-6 py-4">
+    <h3 class="text-lg font-semibold text-white flex items-center">
+      <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z">
+        </path>
+      </svg>
+      Live Tracking
+    </h3>
+  </div>
+
+  @if (loading) {
+  <div class="flex justify-center items-center py-12">
+    <div class="relative">
+      <div class="animate-spin rounded-full h-16 w-16 border-4 border-blue-200 border-t-blue-600"></div>
+      <div class="absolute inset-0 flex items-center justify-center">
+        <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7">
+          </path>
+        </svg>
+      </div>
+    </div>
+    <span class="ml-4 text-lg text-gray-600 font-medium">Loading map...</span>
+  </div>
+  } @else if (error) {
+  <div class="p-6 text-center">
+    <div class="text-red-500 text-4xl mb-3">⚠️</div>
+    <h4 class="text-lg font-medium text-red-800 mb-2">Unable to Load Map</h4>
+    <p class="text-red-600">{{ error }}</p>
+  </div>
+  } @else {
+  <!-- Map Container -->
+  <div class="relative">
+    @if (isGoogleMapsAvailable()) {
+    <div #mapContainer class="h-80 w-full"></div>
+    } @else {
+    <!-- Mock Map Display -->
+    <div class="h-80 bg-gradient-to-br from-blue-100 to-indigo-200 flex items-center justify-center relative">
+      <div class="text-center">
+        <div class="text-6xl mb-4">🗺️</div>
+        <p class="text-lg font-semibold text-gray-700">Interactive Map</p>
+        <p class="text-sm text-gray-500">Google Maps Integration</p>
+      </div>
+
+      <!-- Mock Route Line -->
+      <div class="absolute inset-4 border-4 border-dashed border-blue-400 rounded-lg opacity-50"></div>
+
+      <!-- Mock Markers -->
+      <div
+        class="absolute top-8 left-8 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
+        P</div>
+      <div
+        class="absolute bottom-8 right-8 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
+        D</div>
+      <div
+        class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center text-white text-sm animate-pulse">
+        🚚</div>
+    </div>
+    }
+
+    <!-- Progress Overlay -->
+    @if (shipment?.status === 'in-transit') {
+    <div class="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg">
+      <div class="flex items-center space-x-2 text-sm">
+        <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+        <span class="font-medium">{{ getProgressPercentage() }}% Complete</span>
+      </div>
+    </div>
+    }
+  </div>
+
+  <!-- Route Information -->
+  <div class="p-6">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <!-- Distance -->
+      <div class="bg-blue-50 rounded-xl p-4 border border-blue-200">
+        <div class="flex items-center">
+          <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7">
+              </path>
+            </svg>
+          </div>
+          <div>
+            <div class="text-sm text-blue-600 font-medium">Total Distance</div>
+            <div class="text-lg font-bold text-blue-900">{{ routeInfo?.distance || 'Calculating...' }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Duration -->
+      <div class="bg-green-50 rounded-xl p-4 border border-green-200">
+        <div class="flex items-center">
+          <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+            <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+          <div>
+            <div class="text-sm text-green-600 font-medium">
+              @if (shipment?.status === 'in-transit') {
+              ETA
+              } @else {
+              Estimated Time
+              }
+            </div>
+            <div class="text-lg font-bold text-green-900">{{ getEstimatedTimeRemaining() }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Status -->
+      <div class="bg-purple-50 rounded-xl p-4 border border-purple-200">
+        <div class="flex items-center">
+          <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
+            @switch (shipment?.status) {
+            @case ('pending') {
+            <span class="text-lg">⏳</span>
+            }
+            @case ('assigned') {
+            <span class="text-lg">👤</span>
+            }
+            @case ('picked') {
+            <span class="text-lg">📦</span>
+            }
+            @case ('in-transit') {
+            <span class="text-lg">🚚</span>
+            }
+            @case ('delivered') {
+            <span class="text-lg">✅</span>
+            }
+            @default {
+            <span class="text-lg">📋</span>
+            }
+            }
+          </div>
+          <div>
+            <div class="text-sm text-purple-600 font-medium">Status</div>
+            <div class="text-lg font-bold text-purple-900">{{ shipment?.status | titlecase }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Route Details -->
+    <div class="bg-gray-50 rounded-xl p-4">
+      <h4 class="font-medium text-gray-900 mb-3">📍 Route Details</h4>
+      <div class="space-y-3">
+        <!-- Pickup -->
+        <div class="flex items-start space-x-3">
+          <div class="w-4 h-4 bg-blue-500 rounded-full mt-1 flex-shrink-0"></div>
+          <div class="flex-1">
+            <div class="text-sm font-medium text-gray-900">Pickup Location</div>
+            <div class="text-sm text-gray-600">{{ shipment?.pickup?.address || 'Not specified' }}</div>
+            @if (shipment && shipment.pickup && shipment.pickup.time) {
+            <div class="text-xs text-gray-500">{{ formatPickupTime(shipment.pickup.time) }}</div>
+            }
+          </div>
+        </div>
+
+        <!-- Route line -->
+        <div class="flex items-center space-x-3">
+          <div class="w-0.5 h-6 bg-gray-300 ml-1.5"></div>
+          <div class="flex-1 border-t border-dashed border-gray-300"></div>
+        </div>
+
+        <!-- Delivery -->
+        <div class="flex items-start space-x-3">
+          <div class="w-4 h-4 bg-green-500 rounded-full mt-1 flex-shrink-0"></div>
+          <div class="flex-1">
+            <div class="text-sm font-medium text-gray-900">Delivery Location</div>
+            <div class="text-sm text-gray-600">{{ shipment?.dropoff?.address || 'Not specified' }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- Progress Bar for In-Transit Shipments -->
+    @if (shipment?.status === 'in-transit') {
+    <div class="mt-4 bg-gray-50 rounded-xl p-4">
+      <div class="flex justify-between items-center mb-2">
+        <span class="text-sm font-medium text-gray-700">Delivery Progress</span>
+        <span class="text-sm font-bold text-gray-900">{{ getProgressPercentage() }}%</span>
+      </div>
+      <div class="w-full bg-gray-200 rounded-full h-3">
+        <div class="bg-gradient-to-r from-blue-500 to-green-500 h-3 rounded-full transition-all duration-1000 ease-out"
+          [style.width.%]="getProgressPercentage()"></div>
+      </div>
+    </div>
+    }
+  </div>
+  }
+</div>

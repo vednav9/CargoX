@@ -1,0 +1,112 @@
+<div class="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
+  <div class="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg">
+    <div class="text-center">
+      <h2 class="text-3xl font-bold text-gray-900">Complete Your Profile</h2>
+      <p class="mt-2 text-gray-600">
+        @if (userRole === 'driver') {
+          Please provide your details to start accepting deliveries
+        } @else if (userRole === 'enterprise') {
+          Complete your company profile to start shipping
+        } @else {
+          Add your details to start using CargoX
+        }
+      </p>
+    </div>
+
+    @if (error) {
+      <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-red-700">
+        {{ error }}
+      </div>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-6">
+      <!-- Phone Number -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Phone Number</label>
+        <input type="tel" formControlName="phone"
+          class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+          placeholder="1234567890">
+        @if (form.get('phone')?.touched && form.get('phone')?.invalid) {
+          <p class="mt-1 text-sm text-red-600">Please enter a valid 10-digit phone number</p>
+        }
+      </div>
+
+      <!-- Address -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Address</label>
+        <textarea formControlName="address" rows="3"
+          class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+          placeholder="Enter your full address"></textarea>
+        @if (form.get('address')?.touched && form.get('address')?.invalid) {
+          <p class="mt-1 text-sm text-red-600">Address is required</p>
+        }
+      </div>
+
+      <!-- Company Name (for enterprise) -->
+      @if (userRole === 'enterprise') {
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Company Name</label>
+          <input type="text" formControlName="company"
+            class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+            placeholder="Enter company name">
+          @if (form.get('company')?.touched && form.get('company')?.invalid) {
+            <p class="mt-1 text-sm text-red-600">Company name is required</p>
+          }
+        </div>
+      }
+
+      <!-- Vehicle Details (for drivers) -->
+      @if (userRole === 'driver') {
+        <div formGroupName="vehicleDetails" class="space-y-4">
+          <h3 class="text-lg font-medium text-gray-900">Vehicle Details</h3>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Vehicle Type</label>
+            <select formControlName="type"
+              class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
+              <option value="">Select type</option>
+              <option value="bike">Bike/Scooter</option>
+              <option value="tempo">Tempo/Mini Van</option>
+              <option value="truck-small">Small Truck</option>
+              <option value="truck-large">Large Truck</option>
+              <option value="container">Container</option>
+              <option value="refrigerated">Refrigerated Truck</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700">License Number</label>
+            <input type="text" formControlName="license"
+              class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+              placeholder="Enter license number">
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Vehicle Registration</label>
+            <input type="text" formControlName="registration"
+              class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+              placeholder="Enter registration number">
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Vehicle Capacity (in tons)</label>
+            <input type="number" formControlName="capacity"
+              class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+              placeholder="Enter capacity">
+          </div>
+        </div>
+      }
+
+      <button type="submit"
+        [disabled]="form.invalid || loading"
+        class="w-full flex items-center justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50">
+        @if (loading) {
+          <div class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+          Saving...
+        } @else {
+          Complete Profile
+        }
+      </button>
+    </form>
+  </div>
+</div>

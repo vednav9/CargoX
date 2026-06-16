@@ -1,1 +1,41 @@
-<p>navbar works!</p>
+<nav class="w-full bg-white shadow-md px-6 py-3 flex items-center justify-between">
+  <!-- Left: Logo -->
+  <a routerLink="/" class="flex items-center space-x-2">
+    <img src="logo.svg" alt="CargoX Logo" class="h-10 w-auto"/>
+    <span class="text-xl font-bold text-gray-800">CargoX</span>
+  </a>
+
+  <!-- Center: Enterprise + Driver + Support -->
+  <div class="hidden md:flex space-x-8 text-gray-700 font-medium">
+    <a routerLink="/enterprise" routerLinkActive="text-blue-600 border-b-2 border-blue-600"
+       class="hover:text-blue-600 transition">For Enterprise</a>
+    <a routerLink="/driver" routerLinkActive="text-blue-600 border-b-2 border-blue-600"
+       class="hover:text-blue-600 transition">Driver Partner</a>
+    <a routerLink="/support" routerLinkActive="text-blue-600 border-b-2 border-blue-600"
+       class="hover:text-blue-600 transition">Support</a>
+  </div>
+
+  <!-- Right: Profile -->
+  <div class="relative profile-menu">
+    <button (click)="toggleDropdown()" class="flex items-center focus:outline-none">
+      <img src="profile-icon.png" alt="Profile"
+           class="h-9 w-9 rounded-full border-gray-300" />
+    </button>
+
+    @if (isDropdownOpen) {
+      <ul class="absolute right-0 mt-2 w-52 bg-white shadow-lg rounded-xl py-2 border border-gray-200 z-50">
+        <!-- When logged OUT -->
+        @if ((user$ | async) === null){
+          <li><a routerLink="/login" class="block px-4 py-2 hover:bg-gray-100">Login</a></li>
+          <li><a routerLink="/register" class="block px-4 py-2 hover:bg-gray-100">Register</a></li>
+        } @else {
+          <li class="px-4 py-2 text-sm text-gray-500">
+            Signed in as <span class="font-medium text-gray-800">{{ (user$ | async)?.email }}</span>
+          </li>
+          <li><a routerLink="/track" class="block px-4 py-2 hover:bg-gray-100">Track Shipment</a></li>
+          <li><button (click)="doLogout()" class="w-full text-left px-4 py-2 hover:bg-gray-100 text-red-600">Logout</button></li>
+        }
+      </ul>
+    }
+  </div>
+</nav>

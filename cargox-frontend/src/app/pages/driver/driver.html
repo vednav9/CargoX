@@ -1,0 +1,190 @@
+<div class="min-h-screen bg-gray-50 py-8 px-4">
+  <div class="max-w-7xl mx-auto">
+    <!-- Header -->
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold text-gray-900">Driver Dashboard</h1>
+      <p class="text-gray-600 mt-1">Manage your deliveries and find new jobs</p>
+    </div>
+
+    @if (loading) {
+      <div class="flex justify-center items-center py-12">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <span class="ml-3 text-gray-600">Loading dashboard...</span>
+      </div>
+    } @else if (error) {
+      <div class="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+        <p class="text-red-600">{{ error }}</p>
+        <button (click)="loadData()" class="mt-4 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">
+          Retry
+        </button>
+      </div>
+    } @else {
+      <!-- Stats Cards -->
+      <div class="grid md:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white rounded-xl shadow-sm p-6">
+          <div class="flex items-center">
+            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center text-2xl">
+              📋
+            </div>
+            <div class="ml-4">
+              <div class="text-2xl font-bold text-gray-900">{{ availableJobs.length }}</div>
+              <div class="text-sm text-gray-600">Available Jobs</div>
+            </div>
+          </div>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm p-6">
+          <div class="flex items-center">
+            <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center text-2xl">
+              🚚
+            </div>
+            <div class="ml-4">
+              <!-- FIXED: Use the getter method instead of complex expression -->
+              <div class="text-2xl font-bold text-gray-900">{{ activeJobsCount }}</div>
+              <div class="text-sm text-gray-600">Active Jobs</div>
+            </div>
+          </div>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm p-6">
+          <div class="flex items-center">
+            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center text-2xl">
+              ✅
+            </div>
+            <div class="ml-4">
+              <div class="text-2xl font-bold text-gray-900">{{ getJobsByStatus('delivered').length }}</div>
+              <div class="text-sm text-gray-600">Completed</div>
+            </div>
+          </div>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm p-6">
+          <div class="flex items-center">
+            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center text-2xl">
+              💰
+            </div>
+            <div class="ml-4">
+              <!-- FIXED: Use the getter method -->
+              <div class="text-2xl font-bold text-gray-900">₹{{ totalEarned }}</div>
+              <div class="text-sm text-gray-600">Total Earned</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Available Jobs -->
+      <div class="mb-8">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6">🆕 Available Jobs</h2>
+        @if (availableJobs.length === 0) {
+          <div class="bg-white rounded-xl shadow-sm p-8 text-center">
+            <div class="text-4xl mb-3">🔍</div>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">No Jobs Available</h3>
+            <p class="text-gray-600">Check back later for new delivery opportunities</p>
+          </div>
+        } @else {
+          <div class="grid gap-4">
+            @for (job of availableJobs; track job.id) {
+              <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+                <div class="flex justify-between items-start mb-4">
+                  <div>
+                    <h3 class="text-lg font-semibold text-gray-900">
+                      {{ job.package.type }} - {{ job.package.weight }}kg
+                    </h3>
+                    <p class="text-gray-600">{{ calculateDistance(job.pickup, job.dropoff) }} • Posted {{ formatDate(job.createdAt) }}</p>
+                  </div>
+                  <div class="text-right">
+                    <div class="text-2xl font-bold text-green-600">₹{{ job.payment.amount }}</div>
+                  </div>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <div class="text-sm text-gray-500">Pickup</div>
+                    <div class="font-medium">{{ job.pickup.address }}</div>
+                    @if (job.pickup.time) {
+                      <div class="text-sm text-blue-600">{{ formatDate(job.pickup.time) }}</div>
+                    }
+                  </div>
+                  <div>
+                    <div class="text-sm text-gray-500">Delivery</div>
+                    <div class="font-medium">{{ job.dropoff.address }}</div>
+                  </div>
+                </div>
+
+                <div class="flex justify-between items-center">
+                  <div class="flex items-center space-x-4 text-sm text-gray-600">
+                    <span>📏 {{ job.package.dimensions }}</span>
+                    @if (job.package.fragile) {
+                      <span class="text-red-600">⚠️ Fragile</span>
+                    }
+                  </div>
+                  <button (click)="acceptJob(job.id)" 
+                    class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                    Accept Job
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- My Current Jobs -->
+      <div>
+        <h2 class="text-2xl font-bold text-gray-900 mb-6">🚚 My Jobs</h2>
+        @if (myJobs.length === 0) {
+          <div class="bg-white rounded-xl shadow-sm p-8 text-center">
+            <div class="text-4xl mb-3">📦</div>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">No Active Jobs</h3>
+            <p class="text-gray-600">Accept available jobs to get started</p>
+          </div>
+        } @else {
+          <div class="grid gap-4">
+            @for (job of myJobs; track job.id) {
+              <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div class="flex justify-between items-start mb-4">
+                  <div>
+                    <h3 class="text-lg font-semibold text-gray-900">
+                      Job #{{ job.id.slice(-8).toUpperCase() }}
+                    </h3>
+                    <div class="flex items-center space-x-2 mt-1">
+                      <span class="px-3 py-1 rounded-full text-xs font-medium
+                        {{ job.status === 'assigned' ? 'bg-blue-100 text-blue-800' :
+                           job.status === 'picked' ? 'bg-purple-100 text-purple-800' :
+                           job.status === 'in-transit' ? 'bg-indigo-100 text-indigo-800' :
+                           job.status === 'delivered' ? 'bg-green-100 text-green-800' :
+                           'bg-gray-100 text-gray-800' }}">
+                        {{ job.status | titlecase }}
+                      </span>
+                    </div>
+                  </div>
+                  <div class="text-right">
+                    <div class="text-xl font-bold text-gray-900">₹{{ job.payment.amount }}</div>
+                  </div>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <div class="text-sm text-gray-500">Pickup</div>
+                    <div class="font-medium">{{ job.pickup.address }}</div>
+                  </div>
+                  <div>
+                    <div class="text-sm text-gray-500">Delivery</div>
+                    <div class="font-medium">{{ job.dropoff.address }}</div>
+                  </div>
+                </div>
+
+                <div class="flex justify-between items-center">
+                  <div class="text-sm text-gray-600">
+                    Last updated: {{ formatDate(job.updatedAt) }}
+                  </div>
+                  <a [routerLink]="['/shipments', job.id]" 
+                    class="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors">
+                    View Details
+                  </a>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>
