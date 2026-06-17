@@ -7,7 +7,7 @@ CargoX/
 │   ├── index.js
 │   ├── package.json
 │   └── TEMP_FIREBASE_DATA.txt
-└── cargox-frontend/
+└── frontend/
     ├── angular.json
     ├── package.json
     ├── README.md
